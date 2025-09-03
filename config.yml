@@ -1,0 +1,23 @@
+# Cloudflare Tunnel Configuration
+# Replace [TUNNEL_ID] with your actual tunnel ID after creating the tunnel
+
+tunnel: [TUNNEL_ID]
+credentials-file: /Users/anujsainicse/.cloudflared/[TUNNEL_ID].json
+
+ingress:
+  # Route all traffic to local API server
+  - hostname: ticker.yourdomain.com  # Replace with your actual domain
+    service: http://localhost:8001
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      tlsTimeout: 10s
+      httpHostHeader: localhost:8001
+  
+  # Catch-all rule (required)
+  - service: http_status:404
+
+# Optional: Logging configuration
+# log: 
+#   level: info
+#   file: /Users/anujsainicse/.cloudflared/tunnel.log

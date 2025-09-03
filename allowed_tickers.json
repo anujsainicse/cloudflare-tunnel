@@ -1,0 +1,16 @@
+{
+  "allowed": [
+    {
+      "asset": "BTC",
+      "expiry": "29DEC23"
+    },
+    {
+      "asset": "ETH",
+      "expiry": "29DEC23"
+    },
+    {
+      "asset": "BTC",
+      "expiry": "5JAN24"
+    }
+  ]
+}
