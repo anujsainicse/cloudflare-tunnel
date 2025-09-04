@@ -1,298 +1,324 @@
-# Cloudflare Tunnel for Options Data
+# 🌩️ Cloudflare Tunnel for Options Data
 
-This setup creates a public API tunnel that serves filtered options data from your Redis database. Only specific ticker/date combinations configured in `allowed_tickers.json` are accessible.
+> A secure, public API that serves filtered cryptocurrency options data via Cloudflare Tunnel. Only configured ticker/date combinations are exposed through HTTPS endpoints.
 
-## 📁 Directory Structure
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green.svg)](https://fastapi.tiangolo.com)
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-Tunnel-orange.svg)](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
+
+## ✨ Features
+
+- 🔒 **Secure by Default** - Only whitelisted ticker/date combinations are accessible
+- 🚀 **FastAPI Backend** - High-performance async API with automatic docs
+- 🌐 **Global CDN** - Powered by Cloudflare's global network
+- 📊 **Real-time Data** - Live options data with strike prices, Greeks, and market metrics
+- 🛡️ **DDoS Protection** - Built-in Cloudflare security features
+- ⚡ **Zero Config SSL** - Automatic HTTPS certificates
+
+## 🏗️ Architecture
 
 ```
-cloudflare-tunnel/
-├── tunnel_api.py          # FastAPI server with filtered endpoints
-├── db_config.py           # Redis connection configuration
-├── external_db_access.py  # Database access module
-├── allowed_tickers.json   # Configuration: which tickers/dates to expose
-├── requirements.txt       # Python dependencies
-├── .env                   # Environment variables
-├── config.yml            # Cloudflare tunnel configuration
-├── start.sh              # Startup script
-└── README.md             # This file
+Internet → Cloudflare CDN → Tunnel → Local API → Redis Database
 ```
 
-## 🚀 Quick Start
+## 📋 Prerequisites
 
-### 1. Configure Allowed Tickers
+- **Python 3.8+**
+- **Redis Database** (with options data)
+- **Cloudflare Account** with a domain
+- **macOS/Linux** (Windows via WSL)
 
-Edit `allowed_tickers.json` to specify which ticker/date combinations should be publicly accessible:
+## 🚀 Quick Setup
 
-```json
-{
-  "allowed": [
-    {
-      "asset": "BTC",
-      "expiry": "29DEC23"
-    },
-    {
-      "asset": "ETH", 
-      "expiry": "29DEC23"
-    },
-    {
-      "asset": "BTC",
-      "expiry": "5JAN24"
-    }
-  ]
-}
-```
-
-### 2. Test Locally
+### 1. Clone and Install
 
 ```bash
-./start.sh
+git clone https://github.com/yourusername/cloudflare-tunnel.git
+cd cloudflare-tunnel
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
-This will:
-- Install dependencies
-- Start the API server on http://localhost:8001
-- Show configuration instructions for Cloudflare tunnel
-
-### 3. Set Up Cloudflare Tunnel
+### 2. Install Cloudflare CLI
 
 ```bash
-# Install cloudflared
+# macOS
 brew install cloudflare/cloudflare/cloudflared
 
+# Linux
+wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo dpkg -i cloudflared-linux-amd64.deb
+```
+
+### 3. Configure Your Environment
+
+Create `.env` file:
+```bash
+# Redis connection (adjust for your setup)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+
+# API settings
+API_PORT=8002
+
+# Cloudflare tunnel name
+TUNNEL_NAME=your-tunnel-name
+```
+
+### 4. Set Up Cloudflare Tunnel
+
+```bash
 # Login to Cloudflare
 cloudflared tunnel login
 
 # Create tunnel
-cloudflared tunnel create options-ticker
+cloudflared tunnel create your-tunnel-name
 
-# Note the tunnel ID and update config.yml
-# Replace [TUNNEL_ID] with your actual tunnel ID
+# Update config.yml with your tunnel ID and domain
+# Replace placeholders in config.yml with actual values
 
-# Create DNS record
-cloudflared tunnel route dns options-ticker ticker.yourdomain.com
-
-# Start the tunnel
-./start.sh
+# Create DNS route
+cloudflared tunnel route dns your-tunnel-name api.yourdomain.com
 ```
 
-## 🌐 API Endpoints
+### 5. Configure Data Access
 
-### Available Endpoints
-
-- `GET /` - API information and available combinations
-- `GET /ticker/{asset}/{expiry}` - Get options data (if allowed)
-- `GET /config` - Show current configuration
-- `GET /health` - Health check
-
-### Example Usage
-
-```bash
-# Get BTC options for Dec 29, 2023 (if configured)
-curl https://ticker.yourdomain.com/ticker/BTC/29DEC23
-
-# Check what's available
-curl https://ticker.yourdomain.com/config
-
-# Health check
-curl https://ticker.yourdomain.com/health
-```
-
-### Response Format
-
+Edit `allowed_tickers.json`:
 ```json
 {
-  "asset": "BTC",
-  "expiry": "29DEC23",
-  "timestamp": "2023-12-20T15:30:00.123456",
-  "summary": {
-    "total_options": 156,
-    "call_options": 78,
-    "put_options": 78,
-    "total_volume_24h": 12500000.50,
-    "total_open_interest": 8750000.25
-  },
-  "options": [
+  "allowed": [
     {
-      "symbol": "BTC-29DEC23-45000-C",
-      "last_price": 1250.5,
-      "mark_price": 1245.0,
-      "volume_24h": 125000.0,
-      "open_interest": 150.5,
-      "delta": 0.65,
-      "gamma": 0.0023,
-      "theta": -12.5,
-      "vega": 0.45,
-      "mark_iv": 0.85,
-      "underlying_price": 45123.45,
-      "timestamp": 1703875200.0
+      "asset": "ETH",
+      "expiry": "5SEP25"
+    },
+    {
+      "asset": "BTC", 
+      "expiry": "5SEP25"
     }
   ]
 }
 ```
 
-## ⚙️ Configuration
+### 6. Launch
+
+```bash
+./start.sh
+```
+
+## 📚 API Documentation
+
+### Base URL
+```
+https://your-domain.com
+```
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | API information and status |
+| `GET` | `/health` | Health check endpoint |
+| `GET` | `/config` | Available ticker combinations |
+| `GET` | `/ticker/{asset}/{expiry}` | Get options data for specific asset/expiry |
+
+### Example Response
+
+```json
+{
+  "asset": "ETH",
+  "expiry": "5SEP25", 
+  "timestamp": "2025-09-03T19:32:34.454169",
+  "summary": {
+    "total_options": 86,
+    "call_options": 43,
+    "put_options": 43,
+    "total_volume_24h": 12483.2,
+    "total_open_interest": 26902.7
+  },
+  "options": [
+    {
+      "symbol": "ETH-5SEP25-4800-C-USDT",
+      "strike_price": 4800.0,
+      "option_type": "C",
+      "last_price": 4.4,
+      "mark_price": 2.313266,
+      "underlying_price": 4425.33,
+      "delta": 0.03149913,
+      "gamma": 0.00037049,
+      "theta": -3.87452968,
+      "vega": 0.21697459,
+      "volume_24h": 340.3,
+      "open_interest": 711.1
+    }
+  ]
+}
+```
+
+## 🔧 Configuration
 
 ### Environment Variables (`.env`)
 
 ```bash
-REDIS_HOST=localhost      # Redis host (connects to your options-data-b)
-REDIS_PORT=6380          # Redis port (Docker mapped port)  
-REDIS_DB=0               # Redis database number
-API_PORT=8001            # Local API port
-TUNNEL_NAME=options-ticker  # Cloudflare tunnel name
+REDIS_HOST=localhost          # Redis server host
+REDIS_PORT=6379              # Redis server port  
+REDIS_DB=0                   # Redis database number
+API_PORT=8002                # Local API port
+TUNNEL_NAME=your-tunnel      # Cloudflare tunnel name
 ```
 
-### Ticker Configuration (`allowed_tickers.json`)
-
-Add or remove ticker/date combinations as needed:
-
-```json
-{
-  "allowed": [
-    {"asset": "BTC", "expiry": "29DEC23"},
-    {"asset": "ETH", "expiry": "29DEC23"}, 
-    {"asset": "SOL", "expiry": "29DEC23"},
-    {"asset": "BTC", "expiry": "5JAN24"}
-  ]
-}
-```
-
-The API automatically reloads this configuration on each request.
-
-### Cloudflare Tunnel (`config.yml`)
+### Tunnel Configuration (`config.yml`)
 
 ```yaml
 tunnel: your-tunnel-id-here
-credentials-file: /Users/anujsainicse/.cloudflared/your-tunnel-id-here.json
+credentials-file: /path/to/your/credentials.json
 
 ingress:
-  - hostname: ticker.yourdomain.com
-    service: http://localhost:8001
+  - hostname: api.yourdomain.com
+    service: http://localhost:8002
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
   - service: http_status:404
 ```
 
-## 🔒 Security Features
+### Data Filter (`allowed_tickers.json`)
 
-- **Filtered Access**: Only configured ticker/date combinations are accessible
-- **404 for Non-Configured**: Returns 404 for any non-allowed combinations  
-- **HTTPS by Default**: Cloudflare provides automatic HTTPS
-- **DDoS Protection**: Cloudflare handles traffic protection
-- **No Database Exposure**: Redis is never directly accessible
+Controls which ticker/expiry combinations are publicly accessible:
 
-## 🧪 Testing
-
-### Local Testing
-
-```bash
-# Start API only (without tunnel)
-python tunnel_api.py
-
-# Test endpoints
-curl http://localhost:8001/
-curl http://localhost:8001/config
-curl http://localhost:8001/health
-curl http://localhost:8001/ticker/BTC/29DEC23
-```
-
-### Remote Testing
-
-```bash
-# Test public endpoints (replace with your domain)
-curl https://ticker.yourdomain.com/
-curl https://ticker.yourdomain.com/ticker/BTC/29DEC23
-```
-
-## 📊 Monitoring
-
-### Health Check
-
-```bash
-curl https://ticker.yourdomain.com/health
-```
-
-Returns:
-```json
-{
-  "status": "healthy",
-  "database": "connected",
-  "configuration": "loaded", 
-  "available_tickers": 3,
-  "timestamp": "2023-12-20T15:30:00.123456"
-}
-```
-
-### Configuration Status
-
-```bash
-curl https://ticker.yourdomain.com/config
-```
-
-Shows current configuration and database statistics.
-
-## 🛠 Troubleshooting
-
-### Common Issues
-
-1. **API won't start**: Check if port 8001 is available
-2. **Database connection failed**: Ensure options-data-b Docker containers are running
-3. **Cloudflare tunnel fails**: Verify tunnel ID and credentials in config.yml
-4. **404 for valid ticker**: Check that the combination exists in allowed_tickers.json
-
-### Debug Commands
-
-```bash
-# Check if Redis is accessible
-python -c "from external_db_access import test_connection; print(test_connection())"
-
-# Test API locally
-curl http://localhost:8001/health
-
-# Check tunnel status
-cloudflared tunnel info options-ticker
-```
-
-### Logs
-
-- API logs: Console output when running tunnel_api.py
-- Tunnel logs: Console output when running cloudflared
-- Optional: Configure file logging in config.yml
-
-## 🔄 Updates
-
-### Adding New Ticker/Date Combinations
-
-1. Edit `allowed_tickers.json`
-2. Add new entries to the "allowed" array
-3. The API automatically picks up changes (no restart needed)
-
-Example:
 ```json
 {
   "allowed": [
-    {"asset": "BTC", "expiry": "29DEC23"},
-    {"asset": "NEW_ASSET", "expiry": "15JAN24"}  // Add this line
+    {"asset": "ETH", "expiry": "5SEP25"},
+    {"asset": "BTC", "expiry": "26DEC25"}
   ]
 }
 ```
 
-### Removing Access
+## 🛡️ Security Features
 
-1. Edit `allowed_tickers.json`
-2. Remove entries or set to empty array
-3. Changes take effect immediately
+- **Whitelist-Only Access** - Only configured combinations are accessible
+- **Automatic 404s** - Non-whitelisted requests return 404
+- **HTTPS Only** - All traffic encrypted via Cloudflare
+- **DDoS Protection** - Built-in Cloudflare security
+- **No Direct DB Access** - Redis never exposed directly
 
-## 📁 Dependencies
+## 🔍 Monitoring
 
-- **FastAPI**: Web framework for the API
-- **Uvicorn**: ASGI server
-- **Redis**: Python client for database access
-- **python-dotenv**: Environment variable management
-- **Cloudflared**: Cloudflare tunnel client (installed separately)
+### Health Check
+```bash
+curl https://api.yourdomain.com/health
+```
 
-## 🌐 Production Considerations
+### View Configuration
+```bash
+curl https://api.yourdomain.com/config
+```
 
-- Monitor API performance and database connections
-- Set up alerting for tunnel health
-- Consider rate limiting if needed (can be added via Cloudflare)
-- Regularly update allowed ticker configurations
-- Monitor logs for errors or unusual access patterns
+### Check Tunnel Status
+```bash
+cloudflared tunnel info your-tunnel-name
+```
+
+## 🛠️ Development
+
+### Local Testing
+```bash
+# Start API only (no tunnel)
+python tunnel_api.py
+
+# Test endpoints
+curl http://localhost:8002/health
+```
+
+### Adding New Data
+1. Update `allowed_tickers.json`
+2. Changes take effect immediately (no restart needed)
+
+### Logs
+- API logs: Console output
+- Tunnel logs: Console output when running cloudflared
+
+## 📊 Data Format
+
+### Redis Key Format
+```
+option:ASSET-EXPIRY-STRIKE-TYPE-CURRENCY
+```
+Example: `option:ETH-5SEP25-4800-C-USDT`
+
+### Supported Assets
+- BTC (Bitcoin)
+- ETH (Ethereum)
+- SOL (Solana)
+
+### Date Formats
+- Format: `5SEP25` (no leading zero)
+- Examples: `5SEP25`, `26DEC25`, `31OCT25`
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+**1. Port Already in Use**
+```bash
+lsof -ti:8002  # Find process using port
+kill -9 <PID> # Kill process
+```
+
+**2. Tunnel Connection Failed**
+```bash
+cloudflared tunnel info your-tunnel-name
+cloudflared tunnel login  # Re-authenticate
+```
+
+**3. Empty Data Response**
+- Check if expiry date exists in Redis
+- Verify ticker is in `allowed_tickers.json`
+- Use correct date format (no leading zeros)
+
+**4. DNS Not Resolving**
+- Wait for DNS propagation (up to 24 hours)
+- Check Cloudflare DNS settings
+- Verify tunnel route: `cloudflared tunnel route ip show`
+
+### Debug Commands
+```bash
+# Test Redis connection
+python -c "from external_db_access import test_connection; print(test_connection())"
+
+# Check available Redis keys
+redis-cli KEYS "option:*" | head -10
+
+# Test local API
+curl http://localhost:8002/health
+```
+
+## 📝 Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push branch: `git push origin feature/amazing-feature`
+5. Open Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Support
+
+- 📖 [Documentation](docs/)
+- 🐛 [Report Issues](https://github.com/yourusername/cloudflare-tunnel/issues)
+- 💬 [Discussions](https://github.com/yourusername/cloudflare-tunnel/discussions)
+
+## ⭐ Acknowledgments
+
+- [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/) for secure tunneling
+- [FastAPI](https://fastapi.tiangolo.com/) for the web framework
+- [Redis](https://redis.io/) for data storage
+
+---
+
+Made with ❤️ for the crypto options community
