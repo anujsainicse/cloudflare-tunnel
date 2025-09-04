@@ -1,13 +1,13 @@
 # Cloudflare Tunnel Configuration
 # Replace [TUNNEL_ID] with your actual tunnel ID after creating the tunnel
 
-tunnel: [TUNNEL_ID]
-credentials-file: /Users/anujsainicse/.cloudflared/[TUNNEL_ID].json
+tunnel: 15d1aab1-b4c8-445e-98d3-eb20b78f5e9a
+credentials-file: /Users/sudarshanprakash/.cloudflared/15d1aab1-b4c8-445e-98d3-eb20b78f5e9a.json
 
 ingress:
   # Route all traffic to local API server
-  - hostname: ticker.yourdomain.com  # Replace with your actual domain
-    service: http://localhost:8001
+  - hostname: optiondata.stingfu.com
+    service: http://localhost:8002
     originRequest:
       noTLSVerify: true
       connectTimeout: 30s

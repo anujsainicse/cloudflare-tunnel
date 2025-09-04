@@ -96,7 +96,7 @@ class OptionsDatabase:
         
         try:
             data = self.redis_client.hgetall(f"option:{symbol}")
-            return self._parse_option_data(data) if data else {}
+            return self._parse_option_data(data, symbol) if data else {}
         except Exception as e:
             logger.error(f"Error getting option {symbol}: {e}")
             return {}
@@ -226,12 +226,29 @@ class OptionsDatabase:
     
     # ==================== Helper Methods ====================
     
-    def _parse_option_data(self, data: Dict) -> Dict:
-        """Parse option data with type conversion"""
+    def _parse_option_data(self, data: Dict, symbol: str = '') -> Dict:
+        """Parse option data with type conversion and extract strike price"""
         if not data:
             return {}
         
-        parsed = {'symbol': data.get('symbol', '')}
+        # Use the provided symbol (from Redis key)
+        parsed = {'symbol': symbol}
+        
+        # Extract strike price and option type from symbol
+        # Format: ASSET-EXPIRY-STRIKE-TYPE or ASSET-EXPIRY-STRIKE-TYPE-USDT
+        if symbol:
+            parts = symbol.split('-')
+            if len(parts) >= 4:
+                try:
+                    parsed['strike_price'] = float(parts[2])
+                except (ValueError, IndexError):
+                    parsed['strike_price'] = 0.0
+                
+                # Extract option type (C for Call, P for Put)
+                parsed['option_type'] = parts[3] if len(parts) > 3 else ''
+            else:
+                parsed['strike_price'] = 0.0
+                parsed['option_type'] = ''
         
         # Convert numeric fields
         float_fields = [

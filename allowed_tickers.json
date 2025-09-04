@@ -1,16 +1,40 @@
 {
   "allowed": [
     {
+      "asset": "ETH",
+      "expiry": "5SEP25"
+    },
+    {
       "asset": "BTC",
-      "expiry": "29DEC23"
+      "expiry": "5SEP25"
+    },
+    {
+      "asset": "BTC",
+      "expiry": "6SEP25"
     },
     {
       "asset": "ETH",
-      "expiry": "29DEC23"
+      "expiry": "12SEP25"
     },
     {
       "asset": "BTC",
-      "expiry": "5JAN24"
+      "expiry": "26SEP25"
+    },
+    {
+      "asset": "ETH",
+      "expiry": "26DEC25"
+    },
+    {
+      "asset": "BTC",
+      "expiry": "26DEC25"
+    },
+    {
+      "asset": "ETH",
+      "expiry": "31OCT25"
+    },
+    {
+      "asset": "BTC",
+      "expiry": "31OCT25"
     }
   ]
 }
